@@ -1,0 +1,14 @@
+{
+  "name": "ap2-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AP2 agentic service with web frontend",
+  "scripts": {
+    "dev": "echo 'AP2 service not yet implemented'",
+    "build": "echo 'AP2 service not yet implemented'"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
