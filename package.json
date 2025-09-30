@@ -1,0 +1,44 @@
+{
+  "name": "x402-demo-arbitrum",
+  "author": "Ben Greenberg <ben@arbitrum.foundation>",
+  "license": "MIT",
+  "version": "1.0.0",
+  "private": true,
+  "description": "x402 Arbitrum Sepolia demo with quote service and onchain swap executor",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev:service": "tsx services/quote-service/server.ts",
+    "dev:facilitator": "tsx services/facilitator/server.ts",
+    "pay": "tsx app/cli.ts",
+    "install-x402": "npm install x402-fetch @coinbase/x402",
+    "deploy": "forge script script/Deploy.s.sol --rpc-url arbitrum_sepolia --broadcast -vv",
+    "seed": "forge script script/Seed.s.sol --rpc-url arbitrum_sepolia --broadcast -vv",
+    "test:sol": "forge test -vvv",
+    "check": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@coinbase/x402": "^0.6.5",
+    "@fastify/cors": "^9.0.1",
+    "x402": "^0.6.5",
+    "express": "^4.18.2",
+    "abitype": "^1.0.5",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1",
+    "viem": "^2.21.0",
+    "x402-fetch": "^0.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.16.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1",
+    "type-fest": "^4.26.1",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
