@@ -56,7 +56,7 @@ export class SwapAgent {
    * Get quote from the x402 service
    */
   async getQuote(intent: PaymentSwapQuoteIntent) {
-    // Get quote from x402 service (will handle 402 payment automatically)
+    // Get quote from x402 service and handle 402 payment automatically
     return await this.x402Client.getQuote(intent);
   }
 

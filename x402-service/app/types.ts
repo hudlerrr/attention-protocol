@@ -1,6 +1,57 @@
 import { z } from 'zod';
 import type { Address } from 'viem';
 
+// EIP-3009 Transfer with Authorization types
+export interface EIP3009Authorization {
+  from: Address;
+  to: Address;
+  value: string;
+  validAfter: number;
+  validBefore: number;
+  nonce: `0x${string}`;
+}
+
+export interface EIP3009Signature {
+  v: number;
+  r: `0x${string}`;
+  s: `0x${string}`;
+}
+
+export interface EIP3009PaymentPayload {
+  x402Version: number;
+  scheme: 'exact';
+  network: 'arbitrum-sepolia';
+  payload: {
+    from: Address;
+    to: Address;
+    value: string;
+    validAfter: number;
+    validBefore: number;
+    nonce: `0x${string}`;
+    v: number;
+    r: `0x${string}`;
+    s: `0x${string}`;
+  };
+}
+
+// X402 Payment Requirements
+export interface X402PaymentRequirement {
+  scheme: 'exact';
+  network: 'arbitrum-sepolia';
+  maxAmountRequired: string;
+  resource: string;
+  description: string;
+  mimeType: string;
+  outputSchema?: object | null;
+  payTo: string;
+  maxTimeoutSeconds: number;
+  asset: string; // Token contract address
+  extra: {
+    name: string;
+    version: string;
+  } | null;
+}
+
 // Zod schemas for validation
 export const PaymentSwapQuoteIntentSchema = z.object({
   type: z.literal('payment.swap.quote.intent'),
@@ -44,7 +95,7 @@ export const PaymentSwapQuoteAttestationSchema = z.object({
 export type PaymentSwapQuoteIntent = z.infer<typeof PaymentSwapQuoteIntentSchema>;
 export type PaymentSwapQuoteAttestation = z.infer<typeof PaymentSwapQuoteAttestationSchema>;
 
-// EIP-712 Quote struct matching Solidity
+// EIP-712 Quote struct
 export interface QuoteStruct {
   from: Address;
   sell: Address;
