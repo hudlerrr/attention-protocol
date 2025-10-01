@@ -14,6 +14,7 @@ fastify.register(cors, {
   origin: true,
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Payment'],
+  exposedHeaders: ['X-Payment-Response'],
 });
 
 // Initialize signer, settlement service, and load addresses
