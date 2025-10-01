@@ -1,24 +1,34 @@
-# Arbitrum x402 & AP2 Demo Repository
+# x402 + AP2 Demo on Arbitrum Sepolia
 
-This repository contains two services demonstrating advanced payment and commerce protocols on Arbitrum:
+A complete monorepo demonstrating the [x402 protocol](https://www.x402.org/) and [AP2 protocol](https://github.com/google-agentic-commerce/AP2) for metered AI inference with on-chain settlement on Arbitrum Sepolia.
 
-## Services
+## Overview
 
-### 1. x402-service
-Implementation of the [x402 standard](https://www.x402.org/) for HTTP 402 Payment Required responses, demonstrating swap execution on Arbitrum Sepolia with automatic payment handling.
+This monorepo contains two integrated services:
 
-**Location:** `./x402-service/`
+### **x402-service** - Payment Protocol Infrastructure
+Implementation of x402 for HTTP 402 Payment Required responses with:
+- Quote service for swap quotes
+- Custom facilitator for Arbitrum Sepolia
+- EIP-3009 payment authorizations
+- On-chain settlement with custom token deployed on Arbitrum Sepolia
 
-See [x402-service/README.md](./x402-service/README.md) for detailed documentation.
+### **ap2-service** - AI Inference Metering
+Complete AP2 protocol implementation with:
+- Intent Mandates for user authorization
+- Metered AI inference with local AI service
+- Batch settlement every 5 messages via x402
+- Payment Mandates (receipts) with transaction hashes
 
-### 2. ap2-service
-Agentic service with web frontend demonstrating the [AP2 protocol](https://github.com/google-agentic-commerce/AP2) (Agentic Protocol 2) from Google, integrated with the x402 service.
+## Quick Start
 
-**Location:** `./ap2-service/`
+### Prerequisites
 
-TODO: To be implemented.
+- Node.js 20+ and pnpm
+- Docker (for Ollama)
+- Arbitrum Sepolia wallet with Sepolia ETH
 
-## Getting Started
+### Installation
 
 This is a pnpm workspace monorepo. You can work with services in two ways:
 
@@ -29,7 +39,12 @@ Install all dependencies from the root:
 pnpm install
 ```
 
-Run commands using filters:
+Run everything at once:
+```bash
+pnpm dev:all
+```
+
+Or, run services separately:
 ```bash
 # x402 service commands
 pnpm --filter x402-service dev:service
@@ -39,7 +54,7 @@ pnpm --filter x402-service deploy
 pnpm --filter x402-service seed
 pnpm --filter x402-service check
 
-# ap2 service commands (coming soon)
+# ap2 service commands
 pnpm --filter ap2-service dev
 pnpm --filter ap2-service build
 ```

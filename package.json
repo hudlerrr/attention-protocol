@@ -5,6 +5,24 @@
   "version": "1.0.0",
   "private": true,
   "description": "Monorepo for x402 and AP2 services demo on Arbitrum",
+  "scripts": {
+    "install:all": "pnpm install",
+    "x402:facilitator": "pnpm --filter x402-service dev:facilitator",
+    "x402:service": "pnpm --filter x402-service dev:service",
+    "x402:deploy": "pnpm --filter x402-service run deploy",
+    "x402:seed": "pnpm --filter x402-service seed",
+    "ap2:backend": "pnpm --filter ap2-service dev",
+    "ap2:frontend": "pnpm --filter ap2-frontend dev",
+    "ap2:docker:up": "pnpm --filter ap2-service docker:up",
+    "ap2:docker:down": "pnpm --filter ap2-service docker:down",
+    "ap2:ollama:pull": "pnpm --filter ap2-service ollama:pull",
+    "dev:x402": "concurrently \"pnpm x402:facilitator\" \"pnpm x402:service\"",
+    "dev:ap2": "concurrently \"pnpm ap2:backend\" \"pnpm ap2:frontend\"",
+    "dev:all": "concurrently \"pnpm x402:facilitator\" \"pnpm x402:service\" \"pnpm ap2:backend\" \"pnpm ap2:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
