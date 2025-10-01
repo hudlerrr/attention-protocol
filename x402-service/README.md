@@ -1,17 +1,17 @@
 # Payment Flow with x402 Standard on Arbitrum 
 
-A complete implementation of the [x402 standard](https://www.x402.org/) for HTTP 402 Payment Required responses, demonstrating swap execution on Arbitrum Sepolia with automatic payment handling.
+An implementation of the [x402 standard](https://www.x402.org/) for HTTP 402 Payment Required responses, demonstrating swap execution on Arbitrum Sepolia with EIP-3009 payment signatures and on-chain settlement.
 
 ## What is X402?
 
 [X402](https://www.x402.org/) is a protocol that activates `HTTP 402 Payment Required responses` for machine-to-machine payments. It enables:
 
-- **Automatic payments** for API access using crypto
+- **Automatic payments** for API access
 - **Gasless transactions** via EIP-3009 payment authorization
 - **Standardized payment flows** across web services
 - **AI agent payments** with seamless integration
 
-This project showcases x402 by requiring payment for swap quote generation, then executing the swap on-chain.
+This project showcases x402 by requiring signed payment authorizations for swap quote generation, then executing the swap on-chain.
 
 ## Architecture
 
@@ -62,6 +62,7 @@ Edit `.env` with your values:
 ARBITRUM_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
 PRIVATE_KEY=0x... # Your wallet private key (needs Arbitrum Sepolia ETH for gas)
 QUOTE_SERVICE_PRIVATE_KEY=0x... # Separate wallet private key for quote service signing
+ENABLE_SETTLEMENT=false       # Set to 'true' to execute payments on-chain
 ```
 
 ## Deployment
@@ -167,24 +168,26 @@ curl -X POST http://localhost:3001/quote \
   -d '{"from":"0x...","sell":"0x...","buy":"0x...","sellAmount":"1000000","maxSlippageBps":30,"deadline":1234567890,"chainId":421614,"nonce":"0x..."}'
 ```
 
-**Response: HTTP 402**
+**Response: HTTP 402 (X402-Compliant)**
 ```json
 {
+  "x402Version": 1,
   "error": "Payment Required",
-  "message": "This endpoint requires payment to access",
   "accepts": [{
-    "scheme": "eip3009",
-    "token": {
-      "address": "0x...",
-      "name": "USD Coin",
-      "symbol": "USDC",
-      "decimals": 6,
-      "chainId": 421614
-    },
-    "amount": "1000",
-    "recipient": "0x...",
+    "scheme": "exact",
+    "network": "arbitrum-sepolia",
+    "maxAmountRequired": "1000",
+    "resource": "/quote",
     "description": "Payment for swap quote generation",
-    "maxTimeoutSeconds": 300
+    "mimeType": "application/json",
+    "outputSchema": null,
+    "payTo": "0x...",
+    "maxTimeoutSeconds": 300,
+    "asset": "0x...",
+    "extra": {
+      "name": "TestUSDC",
+      "version": "1"
+    }
   }],
   "facilitator": {
     "url": "http://localhost:3002"
@@ -192,34 +195,58 @@ curl -X POST http://localhost:3001/quote \
 }
 ```
 
-### 2. Automatic Payment (via x402-fetch)
+### 2. Automatic Payment with EIP-3009 Signatures
+
 The client automatically:
-1. Creates EIP-3009 payment authorization
-2. Signs with wallet private key
-3. Retries request with `X-Payment` header
-4. Receives quote with `X-Payment-Response` confirmation
+1. **Creates EIP-3009 payment authorization** with proper parameters
+2. **Signs with EIP-712** using the wallet private key
+3. **Encodes as base64** and adds to `X-Payment` header
+4. **Retries request** with signed payment payload
+5. **Server verifies signature** locally (checks signer, amount, recipient, timing)
+6. **Receives quote** with `X-Payment-Response` confirmation
+
+**X-Payment Header Structure:**
+```json
+{
+  "x402Version": 1,
+  "scheme": "exact",
+  "network": "arbitrum-sepolia",
+  "payload": {
+    "from": "0x...",
+    "to": "0x...",
+    "value": "1000",
+    "validAfter": 1234567890,
+    "validBefore": 1234568190,
+    "nonce": "0x...",
+    "v": 27,
+    "r": "0x...",
+    "s": "0x..."
+  }
+}
+```
 
 ## File Structure
 
 ```
 ├── app/
 │   ├── agent.ts          # Swap orchestration logic
-│   ├── cli.ts            # X402-compliant CLI interface
-│   ├── client.ts         # X402 client with auto-payment
+│   ├── cli.ts            # X402 compliant CLI interface
+│   ├── client.ts         # X402 client with EIP-3009 signatures
 │   ├── config.ts         # Environment and contract config
+│   ├── eip3009.ts        # EIP-3009 signature utilities
 │   └── types.ts          # TypeScript type definitions
 ├── contracts/
 │   ├── ComposableExecutor.sol    # Main swap execution contract
 │   ├── QuoteRegistry.sol         # Nonce tracking for replay protection
 │   ├── Token/
-│   │   ├── TestUSDC.sol         # Test USDC token (6 decimals)
-│   │   └── TestWETH.sol         # Test WETH token (18 decimals)
+│   │   ├── TestUSDC.sol         # Test USDC with EIP-3009
+│   │   └── TestWETH.sol         # Test WETH with EIP-3009
 │   └── adapters/
 │       ├── IAdapter.sol         # Adapter interface
 │       └── MockAdapter.sol      # Mock DEX adapter
 ├── services/
 │   └── quote-service/
-│       ├── server.ts            # X402-compliant quote service
+│       ├── server.ts            # X402 compliant with signature verification
 │       ├── facilitator.ts       # X402 facilitator integration
 │       └── signer.ts           # EIP-712 quote signing
 ├── script/

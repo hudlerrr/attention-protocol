@@ -16,6 +16,9 @@ export const ENV = {
   USDC_DECIMALS: parseInt(process.env.USDC_DECIMALS || '6'),
   MOCK_RATE_NUMERATOR: parseInt(process.env.MOCK_RATE_NUMERATOR || '995000'),
   MOCK_RATE_DENOMINATOR: parseInt(process.env.MOCK_RATE_DENOMINATOR || '1000000'),
+  ENABLE_SETTLEMENT: process.env.ENABLE_SETTLEMENT === 'true',
+  GAS_PRICE_MULTIPLIER: parseFloat(process.env.GAS_PRICE_MULTIPLIER || '1.2'),
+  MAX_GAS_PRICE_GWEI: parseInt(process.env.MAX_GAS_PRICE_GWEI || '100'),
 };
 
 // Load deployed contract addresses

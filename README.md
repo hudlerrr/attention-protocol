@@ -67,7 +67,7 @@ pnpm dev
 ```
 ┌─────────────────┐
 │   AP2 Service   │
-│  (Web Frontend) │
+│  (Agent Layer)  │
 └────────┬────────┘
          │
          ▼

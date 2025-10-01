@@ -1,8 +1,10 @@
 {
   "name": "x402-demo-arbitrum-monorepo",
+  "author": "Ben Greenberg <ben@arbitrum.foundation>",
+  "license": "MIT",
   "version": "1.0.0",
   "private": true,
-  "description": "Monorepo for x402 and AP2 services on Arbitrum",
+  "description": "Monorepo for x402 and AP2 services demo on Arbitrum",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"

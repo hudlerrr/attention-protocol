@@ -24,7 +24,7 @@ export class QuoteSigner {
       verifyingContract,
     };
 
-    // Sign the typed data directly (EIP-712)
+    // Sign the typed data
     const signature = await this.account.signTypedData({
       domain,
       types: EIP712_TYPES,

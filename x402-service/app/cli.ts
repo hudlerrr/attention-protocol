@@ -100,13 +100,13 @@ program
 
       console.log(`Getting quote from x402 service (will auto-pay)...`);
 
-      // Get quote using x402 client (handles payment automatically)
+      // Get quote using x402 client and handle payment automatically
       const attestation = await x402Client.getQuote(intent);
 
       console.log(`Received paid quote:`);
-      console.log(`  Expected output: ${agent.formatTokenAmount(BigInt(attestation.route.expected_out), options.buy)} ${options.buy}`);
-      console.log(`  Minimum output: ${agent.formatTokenAmount(BigInt(attestation.quote.minBuy), options.buy)} ${options.buy}`);
-      console.log(`  Signer: ${attestation.signer}`);
+      console.log(`Expected output: ${agent.formatTokenAmount(BigInt(attestation.route.expected_out), options.buy)} ${options.buy}`);
+      console.log(`Minimum output: ${agent.formatTokenAmount(BigInt(attestation.quote.minBuy), options.buy)} ${options.buy}`);
+      console.log(`Signer: ${attestation.signer}`);
 
       // Check token approval
       const sellTokenContract = getContract({
@@ -132,13 +132,13 @@ program
         
         // Wait for approval confirmation
         await publicClient.waitForTransactionReceipt({ hash: approveTx });
-        console.log(`  Approval confirmed`);
+        console.log(`Approval confirmed`);
       } else {
-        console.log(`  ${options.sell} already approved`);
+        console.log(`${options.sell} already approved`);
       }
 
       // Execute swap
-      console.log(`  Executing swap...`);
+      console.log(`Executing swap...`);
 
       const quote = {
         from: attestation.quote.from as `0x${string}`,
@@ -159,7 +159,7 @@ program
           quote,
           attestation.signature as `0x${string}`,
           addresses.mockAdapter,
-          '0x', // empty dexData for mock adapter
+          '0x', // empty hexdata for mock
           recipient,
         ],
       });
@@ -169,7 +169,7 @@ program
 
       // Wait for confirmation and get receipt
       const receipt = await publicClient.waitForTransactionReceipt({ hash: swapTx });
-      console.log(`  Transaction confirmed in block ${receipt.blockNumber}`);
+      console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
 
       // Decode QuoteExecuted event
       try {
@@ -183,11 +183,11 @@ program
           const decoded = decodedLogs[0];
           const { sellAmount, bought, to, intentHash } = decoded.args;
           console.log(`\nX402-compliant swap completed successfully!`);
-          console.log(`  Quote payment: 0.001 USDC (paid via x402)`);
-          console.log(`  Sold: ${agent.formatTokenAmount(sellAmount, options.sell)} ${options.sell}`);
-          console.log(`  Bought: ${agent.formatTokenAmount(bought, options.buy)} ${options.buy}`);
-          console.log(`  Recipient: ${to}`);
-          console.log(`  Intent Hash: ${intentHash}`);
+          console.log(`Quote payment: 0.001 USDC (paid via x402)`);
+          console.log(`Sold: ${agent.formatTokenAmount(sellAmount, options.sell)} ${options.sell}`);
+          console.log(`Bought: ${agent.formatTokenAmount(bought, options.buy)} ${options.buy}`);
+          console.log(`Recipient: ${to}`);
+          console.log(`Intent Hash: ${intentHash}`);
         }
       } catch (error) {
         console.log('Swap completed (event parsing failed)');
