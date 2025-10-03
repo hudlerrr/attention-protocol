@@ -11,10 +11,10 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f ollama",
-    "ollama:pull": "docker exec -it ap2-ollama ollama pull llama3.1:8b"
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f ollama",
+    "ollama:pull": "docker compose exec -T ollama ollama pull llama3.1:8b"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",

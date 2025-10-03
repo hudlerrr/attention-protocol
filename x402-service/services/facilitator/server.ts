@@ -14,13 +14,35 @@ interface ArbitrumSupportedPaymentKind {
 
 config();
 
-const EVM_PRIVATE_KEY = process.env.QUOTE_SERVICE_PRIVATE_KEY || "";
-const USDC_ADDRESS = process.env.USDC_ADDRESS || "";
+// Validate and normalize private key
+let EVM_PRIVATE_KEY = process.env.QUOTE_SERVICE_PRIVATE_KEY || "";
 
 if (!EVM_PRIVATE_KEY) {
   console.error("Missing QUOTE_SERVICE_PRIVATE_KEY environment variable");
   process.exit(1);
 }
+
+// Normalize: add 0x prefix if missing
+if (!EVM_PRIVATE_KEY.startsWith("0x")) {
+  EVM_PRIVATE_KEY = `0x${EVM_PRIVATE_KEY}`;
+}
+
+// Validate format: must be 0x followed by 64 hex characters
+if (EVM_PRIVATE_KEY.length !== 66) {
+  console.error(`Invalid QUOTE_SERVICE_PRIVATE_KEY format: expected 66 characters (0x + 64 hex), got ${EVM_PRIVATE_KEY.length}`);
+  console.error("Example: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
+  process.exit(1);
+}
+
+// Validate hex characters (0-9, a-f, A-F)
+const hexPattern = /^0x[0-9a-fA-F]{64}$/;
+if (!hexPattern.test(EVM_PRIVATE_KEY)) {
+  console.error("Invalid QUOTE_SERVICE_PRIVATE_KEY format: must contain only hexadecimal characters (0-9, a-f, A-F)");
+  console.error("Example: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
+  process.exit(1);
+}
+
+const USDC_ADDRESS = process.env.USDC_ADDRESS || "";
 
 if (!USDC_ADDRESS) {
   console.error("Missing USDC_ADDRESS environment variable");
@@ -163,14 +185,56 @@ app.post("/settle", async (req: Request, res: Response) => {
       throw new Error("Invalid network - only arbitrum-sepolia is supported");
     }
 
-    // Execute on-chain settlement
+    // Security validations: validate all critical parameters against configured values
+    const merchantAddress = account.address;
+    
+    // Normalize addresses for comparison (lowercase)
+    const requestedToken = paymentRequirements.token.toLowerCase();
+    const configuredToken = USDC_ADDRESS.toLowerCase();
+    const requestedRecipient = paymentPayload.payload.to.toLowerCase();
+    const configuredRecipient = merchantAddress.toLowerCase();
+    
+    // Validate token: must match configured USDC address
+    if (requestedToken !== configuredToken) {
+      console.error(`[Facilitator] Token mismatch - requested: ${requestedToken}, configured: ${configuredToken}`);
+      throw new Error(`Invalid token address. Only ${USDC_ADDRESS} is supported.`);
+    }
+    
+    // Validate recipient: must match configured merchant address
+    if (requestedRecipient !== configuredRecipient) {
+      console.error(`[Facilitator] Recipient mismatch - requested: ${requestedRecipient}, configured: ${configuredRecipient}`);
+      throw new Error(`Invalid recipient address. Payments must go to ${merchantAddress}`);
+    }
+    
+    // Validate amounts match between requirements and payload
+    if (paymentRequirements.amount !== paymentPayload.payload.value) {
+      console.error(`[Facilitator] Amount mismatch - requirements: ${paymentRequirements.amount}, payload: ${paymentPayload.payload.value}`);
+      throw new Error('Amount mismatch between payment requirements and payload');
+    }
+    
+    // Validate amount is a positive integer
+    const amount = BigInt(paymentRequirements.amount);
+    if (amount <= 0n) {
+      console.error(`[Facilitator] Invalid amount: ${amount}`);
+      throw new Error('Amount must be a positive integer');
+    }
+    
+    // Optional: add maximum amount limit (e.g., 1000 USDC = 1000000000 micro-USDC)
+    const MAX_AMOUNT = BigInt(1_000_000_000); // 1000 USDC in 6 decimals
+    if (amount > MAX_AMOUNT) {
+      console.error(`[Facilitator] Amount exceeds limit: ${amount} > ${MAX_AMOUNT}`);
+      throw new Error(`Amount exceeds maximum limit of ${MAX_AMOUNT}`);
+    }
+
+    // Execute on-chain settlement using validated/configured values
     // For demo: merchant pulls funds using transferFrom (requires user approval)
     // In production with EIP-7702: would use transferWithAuthorization with delegated signing
+    console.log('[Facilitator] Security validations passed');
     console.log('[Facilitator] Executing settlement via transferFrom...');
     console.log('[Facilitator] From:', paymentPayload.payload.from);
-    console.log('[Facilitator] To:', paymentPayload.payload.to);
-    console.log('[Facilitator] Amount:', paymentRequirements.amount);
-    console.log('[Facilitator] Token:', paymentRequirements.token);
+    console.log('[Facilitator] To:', merchantAddress, '(validated)');
+    console.log('[Facilitator] Amount:', amount.toString(), '(validated)');
+    console.log('[Facilitator] Token:', USDC_ADDRESS, '(validated)');
     
     // ERC-20 transferFrom ABI
     const transferFromAbi = [{
@@ -185,15 +249,15 @@ app.post("/settle", async (req: Request, res: Response) => {
       outputs: [{ name: '', type: 'bool' }],
     }] as const;
     
-    // Execute the transfer (merchant pulls funds with user's prior approval)
+    // Execute the transfer using ONLY validated/configured values
     const hash = await client.writeContract({
-      address: paymentRequirements.token as `0x${string}`,
+      address: USDC_ADDRESS as `0x${string}`, // Use configured USDC, not request value
       abi: transferFromAbi,
       functionName: 'transferFrom',
       args: [
         paymentPayload.payload.from as `0x${string}`,
-        paymentPayload.payload.to as `0x${string}`,
-        BigInt(paymentPayload.payload.value),
+        merchantAddress as `0x${string}`, // Use configured merchant, not request value
+        amount, // Use validated amount
       ],
     });
     

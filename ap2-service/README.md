@@ -228,6 +228,10 @@ GET /status
 POST /mandate/create
 Body: { userAddress, dailyCapMicroUsdc?, sessionId }
 
+# Submit signed Intent Mandate
+POST /mandate/submit
+Body: { unsignedMandate, signature }
+
 # Get mandate
 GET /mandate/:mandateId
 

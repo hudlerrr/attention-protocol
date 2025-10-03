@@ -1,14 +1,29 @@
+export interface PaymentMethod {
+  token: string;
+  network: 'arbitrum-sepolia';
+  chainId: 421614;
+}
+
+export interface RiskPayload {
+  ipAddress?: string;
+  userAgent?: string;
+  sessionId: string;
+}
+
 export interface IntentMandate {
   mandateId: string;
   createdAt: number;
   expiresAt: number;
   userAddress: string;
+  userSignature: string;
   merchantAddress: string;
+  paymentMethods: PaymentMethod[];
   dailyCapMicroUsdc: number;
   pricePerMessageMicroUsdc: number;
   batchThreshold: number;
   serviceType: 'ai-inference';
   modelName: string;
+  riskPayload?: RiskPayload;
 }
 
 export interface InferenceResponse {

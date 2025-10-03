@@ -1,4 +1,4 @@
-import { keccak256, encodePacked, encodeAbiParameters, parseAbiParameters, recoverAddress, type Address } from 'viem';
+import { hashTypedData, recoverAddress, type Address } from 'viem';
 import { ARBITRUM_SEPOLIA_CHAIN_ID } from './config.js';
 import type { IntentMandate } from './types.js';
 
@@ -54,44 +54,16 @@ export async function verifyMandateSignature(
   try {
     // Get merchant address from mandate for message verification
     const message = getMandateMessage(mandate, mandate.merchantAddress as Address);
-
-    // Compute the struct hash
-    const structHash = keccak256(
-      encodeAbiParameters(
-        parseAbiParameters('bytes32, bytes32, address, address, uint256, uint256, uint256, bytes32, bytes32, uint256'),
-        [
-          keccak256(encodePacked(['string'], ['IntentMandate(string mandateId,address userAddress,address merchantAddress,uint256 dailyCapMicroUsdc,uint256 pricePerMessageMicroUsdc,uint256 batchThreshold,string serviceType,string modelName,uint256 expiresAt)'])),
-          keccak256(encodePacked(['string'], [message.mandateId])),
-          message.userAddress,
-          message.merchantAddress,
-          message.dailyCapMicroUsdc,
-          message.pricePerMessageMicroUsdc,
-          message.batchThreshold,
-          keccak256(encodePacked(['string'], [message.serviceType])),
-          keccak256(encodePacked(['string'], [message.modelName])),
-          message.expiresAt,
-        ]
-      )
-    );
-
-    // Compute domain separator (using the verifying contract passed in)
-    const domainSeparator = keccak256(
-      encodeAbiParameters(
-        parseAbiParameters('bytes32, bytes32, bytes32, uint256, address'),
-        [
-          keccak256(encodePacked(['string'], ['EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'])),
-          keccak256(encodePacked(['string'], [INTENT_MANDATE_DOMAIN.name])),
-          keccak256(encodePacked(['string'], [INTENT_MANDATE_DOMAIN.version])),
-          BigInt(INTENT_MANDATE_DOMAIN.chainId),
-          verifyingContract,
-        ]
-      )
-    );
-
-    // Compute final digest
-    const digest = keccak256(
-      encodePacked(['string', 'bytes32', 'bytes32'], ['\x19\x01', domainSeparator, structHash])
-    );
+    
+    const digest = hashTypedData({
+      domain: {
+        ...INTENT_MANDATE_DOMAIN,
+        verifyingContract,
+      },
+      types: INTENT_MANDATE_TYPES,
+      primaryType: 'IntentMandate',
+      message,
+    });
 
     // Recover signer
     const recoveredAddress = await recoverAddress({
@@ -106,42 +78,19 @@ export async function verifyMandateSignature(
   }
 }
 
-const EIP3009_TYPEHASH = keccak256(
-  encodePacked(
-    ['string'],
-    ['TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)']
-  )
-);
-
 /**
- * Create EIP-712 domain separator for a token contract
+ * EIP-3009 types for TransferWithAuthorization
  */
-export function createDomainSeparator(
-  tokenAddress: Address,
-  tokenName: string,
-  tokenVersion: string,
-  chainId: number
-): `0x${string}` {
-  const domainTypeHash = keccak256(
-    encodePacked(
-      ['string'],
-      ['EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)']
-    )
-  );
-
-  return keccak256(
-    encodeAbiParameters(
-      parseAbiParameters('bytes32, bytes32, bytes32, uint256, address'),
-      [
-        domainTypeHash,
-        keccak256(encodePacked(['string'], [tokenName])),
-        keccak256(encodePacked(['string'], [tokenVersion])),
-        BigInt(chainId),
-        tokenAddress,
-      ]
-    )
-  );
-}
+const EIP3009_TYPES = {
+  TransferWithAuthorization: [
+    { name: 'from', type: 'address' },
+    { name: 'to', type: 'address' },
+    { name: 'value', type: 'uint256' },
+    { name: 'validAfter', type: 'uint256' },
+    { name: 'validBefore', type: 'uint256' },
+    { name: 'nonce', type: 'bytes32' },
+  ],
+} as const;
 
 /**
  * Verify an EIP-3009 signature and recover the signer address
@@ -166,29 +115,27 @@ export async function verifyEIP3009Signature(
       return null;
     }
 
-    // Create struct hash
-    const structHash = keccak256(
-      encodeAbiParameters(
-        parseAbiParameters('bytes32, address, address, uint256, uint256, uint256, bytes32'),
-        [
-          EIP3009_TYPEHASH,
-          from,
-          to,
-          BigInt(value),
-          BigInt(validAfter),
-          BigInt(validBefore),
-          nonce,
-        ]
-      )
-    );
+    const message = {
+      from,
+      to,
+      value: BigInt(value),
+      validAfter: BigInt(validAfter),
+      validBefore: BigInt(validBefore),
+      nonce,
+    };
 
-    // Create domain separator
-    const domainSeparator = createDomainSeparator(tokenAddress, tokenName, tokenVersion, chainId);
-
-    // Create digest
-    const digest = keccak256(
-      encodePacked(['string', 'bytes32', 'bytes32'], ['\x19\x01', domainSeparator, structHash])
-    );
+    // Use viem's hashTypedData for EIP-3009
+    const digest = hashTypedData({
+      domain: {
+        name: tokenName,
+        version: tokenVersion,
+        chainId,
+        verifyingContract: tokenAddress,
+      },
+      types: EIP3009_TYPES,
+      primaryType: 'TransferWithAuthorization',
+      message,
+    });
 
     // Recover signer address
     const fullSignature = `${signature.r}${signature.s.slice(2)}${signature.v.toString(16).padStart(2, '0')}` as `0x${string}`;

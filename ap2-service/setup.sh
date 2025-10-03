@@ -57,8 +57,28 @@ else
     exit 1
 fi
 
+if command_exists curl; then
+    CURL_VERSION=$(curl --version | head -n1)
+    print_success "curl installed: $CURL_VERSION"
+else
+    print_error "curl not found. Install with: apt-get install -y curl or brew install curl"
+    exit 1
+fi
+
 if command_exists docker; then
     print_success "Docker installed"
+    
+    # Detect Docker Compose (v2 or legacy)
+    if docker compose version >/dev/null 2>&1; then
+        COMPOSE_CMD="docker compose"
+        print_success "Docker Compose v2 detected"
+    elif command_exists docker-compose; then
+        COMPOSE_CMD="docker-compose"
+        print_success "Docker Compose (legacy) detected"
+    else
+        print_error "Docker Compose not found. Install Docker Compose plugin or legacy docker-compose"
+        exit 1
+    fi
 else
     print_error "Docker not found. Please install Docker from https://www.docker.com/"
     exit 1
@@ -103,17 +123,30 @@ echo ""
 
 # Start Ollama with Docker Compose
 print_info "Starting Ollama container..."
-docker-compose up -d
+$COMPOSE_CMD up -d
 
-# Wait for Ollama to be ready
+# Wait for Ollama to be ready with polling
 print_info "Waiting for Ollama to be ready..."
-sleep 5
+OLLAMA_TIMEOUT=60
+OLLAMA_INTERVAL=2
+ELAPSED=0
 
-# Check if Ollama is running
-if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
-    print_success "Ollama is running"
-else
-    print_warning "Ollama may not be ready yet. You can check with: docker-compose logs ollama"
+while [ $ELAPSED -lt $OLLAMA_TIMEOUT ]; do
+    if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+        print_success "Ollama is running"
+        break
+    fi
+    echo -n "."
+    sleep $OLLAMA_INTERVAL
+    ELAPSED=$((ELAPSED + OLLAMA_INTERVAL))
+done
+
+# Check if we timed out
+if [ $ELAPSED -ge $OLLAMA_TIMEOUT ]; then
+    echo ""
+    print_error "Ollama failed to start within ${OLLAMA_TIMEOUT}s"
+    print_info "Check logs with: $COMPOSE_CMD logs ollama"
+    exit 1
 fi
 
 echo ""
@@ -122,8 +155,15 @@ echo ""
 
 # Pull the model
 print_info "Pulling llama3.1:8b model (this may take a few minutes)..."
-docker exec ap2-ollama ollama pull llama3.1:8b
-print_success "Model pulled successfully"
+if $COMPOSE_CMD exec -T ollama ollama pull llama3.1:8b; then
+    print_success "Model pulled successfully"
+else
+    echo ""
+    print_error "Failed to pull llama3.1:8b model"
+    print_info "Check Ollama logs with: $COMPOSE_CMD logs ollama"
+    print_info "Ensure you have sufficient disk space and network connectivity"
+    exit 1
+fi
 
 echo ""
 echo "Checking x402 services..."

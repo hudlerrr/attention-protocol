@@ -15,6 +15,15 @@ export class SettlementAdapter {
   private delegatedSigner;
 
   constructor() {
+    // Validate required environment variables
+    if (!CONFIG.MERCHANT_PRIVATE_KEY) {
+      throw new Error('MISSING_ENV: MERCHANT_PRIVATE_KEY is required. Set it in your .env file.');
+    }
+    
+    if (!CONFIG.USDC_ADDRESS) {
+      throw new Error('MISSING_ENV: USDC_ADDRESS is required. Set it in your .env file.');
+    }
+    
     this.account = privateKeyToAccount(CONFIG.MERCHANT_PRIVATE_KEY);
     
     this.walletClient = createWalletClient({

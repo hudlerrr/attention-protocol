@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAccount, useConnect, useDisconnect, useSignTypedData, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { Wallet, MessageSquare, DollarSign, CheckCircle, AlertCircle, ExternalLink, Cpu } from 'lucide-react';
+import { Wallet, MessageSquare, DollarSign, CheckCircle, AlertCircle, ExternalLink, Cpu, X } from 'lucide-react';
 import { apiClient } from './api';
 import type { IntentMandate, ChatMessage, InferenceResponse } from './types';
 import { parseUnits } from 'viem';
@@ -35,6 +35,7 @@ function App() {
   const [isSigning, setIsSigning] = useState(false);
   const [hasApproved, setHasApproved] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const creationInProgressRef = useRef(false);
   const [settlementToast, setSettlementToast] = useState<{ txHash: string; explorerUrl: string } | null>(null);
 
   // Check service health on mount
@@ -46,7 +47,7 @@ function App() {
 
   // create mandate when wallet connects, reset when disconnects
   useEffect(() => {
-    if (isConnected && address && !mandate && !isCreatingMandate) {
+    if (isConnected && address && !mandate && !isCreatingMandate && !creationInProgressRef.current) {
       console.log('Triggering mandate creation...');
       createMandate();
     } else if (!isConnected) {
@@ -54,13 +55,15 @@ function App() {
       setMandate(null);
       setMessages([]);
       setError(null);
+      creationInProgressRef.current = false;
     }
   }, [isConnected, address, mandate, isCreatingMandate]);
 
   const createMandate = async () => {
-    if (!address || isCreatingMandate || mandate) return;
+    if (!address || isCreatingMandate || mandate || creationInProgressRef.current) return;
 
     try {
+      creationInProgressRef.current = true;
       setIsCreatingMandate(true);
       setIsSigning(true);
       setError(null);
@@ -116,6 +119,7 @@ function App() {
         setError(err instanceof Error ? err.message : 'Failed to create mandate');
       }
     } finally {
+      creationInProgressRef.current = false;
       setIsCreatingMandate(false);
     }
   };
@@ -717,7 +721,7 @@ function App() {
                 onClick={() => setSettlementToast(null)}
                 className="flex-shrink-0 text-white hover:text-green-100 transition-colors"
               >
-                <AlertCircle className="w-5 h-5 rotate-45" />
+                <X className="w-5 h-5" />
               </button>
             </div>
           </div>
