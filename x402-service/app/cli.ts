@@ -112,7 +112,7 @@ program
       const sellTokenContract = getContract({
         address: agent.getTokenAddress(options.sell),
         abi: ERC20_ABI,
-        client: publicClient,
+        client: { public: publicClient, wallet: walletClient },
       });
 
       const currentAllowance = await sellTokenContract.read.allowance([account.address, addresses.executor]);

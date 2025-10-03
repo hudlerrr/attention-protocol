@@ -10,7 +10,7 @@ import { SettlementService } from '../../app/settlement';
 
 const fastify = Fastify({ logger: true });
 
-fastify.register(cors, {
+fastify.register(cors as any, {
   origin: true,
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Payment'],

@@ -4,10 +4,29 @@
   "license": "MIT",
   "version": "1.0.0",
   "private": true,
-  "description": "AP2 agentic service with web frontend",
+  "description": "AP2 AI inference metering service with x402 settlement on Arbitrum Sepolia",
+  "type": "module",
   "scripts": {
-    "dev": "echo 'AP2 service not yet implemented'",
-    "build": "echo 'AP2 service not yet implemented'"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f ollama",
+    "ollama:pull": "docker compose exec -T ollama ollama pull llama3.1:8b"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.0",
+    "viem": "^2.21.54",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">=20.0.0",
