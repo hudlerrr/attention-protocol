@@ -56,6 +56,24 @@ This service implements a local, end-to-end demo showcasing:
 
 ## Installation
 
+### 0. Deploy x402 Contracts First (Required)
+
+**Before setting up AP2, you must deploy the x402 smart contracts.**
+
+From the **monorepo root**:
+
+```bash
+# Deploy contracts to Arbitrum Sepolia
+pnpm x402:deploy
+
+# Seed test tokens
+pnpm x402:seed
+```
+
+This creates `x402-service/out/addresses.sepolia.json` with the TestUSDC address you'll need in step 2.
+
+See [x402-service/README.md](../x402-service/README.md) for detailed deployment instructions.
+
 ### 1. Install Dependencies
 
 From the **monorepo root**:
