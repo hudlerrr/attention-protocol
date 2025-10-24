@@ -25,52 +25,109 @@ Complete AP2 protocol implementation with:
 ### Prerequisites
 
 - Node.js 20+ and pnpm
-- Docker (for Ollama)
-- Arbitrum Sepolia wallet with Sepolia ETH
+- [Foundry](https://getfoundry.sh/) for smart contract deployment
+- Docker (for Ollama AI service)
+- Arbitrum Sepolia wallet with Sepolia ETH for gas fees
 
-### Installation
+### Installation & Setup
 
-This is a pnpm workspace monorepo. You can work with services in two ways:
+Follow these steps in order:
 
-### Option 1: From Root (Recommended)
+#### 1. Install Dependencies
 
-Install all dependencies from the root:
 ```bash
 pnpm install
 ```
 
-Run everything at once:
+#### 2. Configure Environment Variables
+
+Set up environment variables for both services:
+
+```bash
+# x402-service configuration
+cp x402-service/.env.example x402-service/.env
+
+# ap2-service configuration
+cp ap2-service/.env.example ap2-service/.env
+```
+
+Edit the `.env` files with your wallet private keys and RPC URLs. See individual service READMEs for detailed configuration.
+
+#### 3. Deploy Smart Contracts (Required First Step)
+
+**This step must be completed before running the services.**
+
+Deploy TestUSDC, TestWETH, QuoteRegistry, MockAdapter, and ComposableExecutor contracts to Arbitrum Sepolia:
+
+```bash
+pnpm x402:deploy
+```
+
+This creates `x402-service/out/addresses.sepolia.json` with deployed contract addresses.
+
+#### 4. Seed Test Tokens
+
+Mint test USDC and WETH tokens to your wallet:
+
+```bash
+pnpm x402:seed
+```
+
+#### 5. Start Ollama (for AP2 AI Inference)
+
+Start the Docker container and pull the AI model:
+
+```bash
+# Start Ollama container
+pnpm ap2:docker:up
+
+# Pull the AI model (first time only)
+pnpm ap2:ollama:pull
+```
+
+Verify Ollama is running:
+```bash
+curl http://localhost:11434/api/tags
+```
+
+#### 6. Run the Services
+
+You have several options:
+
+**Run everything together:**
 ```bash
 pnpm dev:all
 ```
 
-Or, run services separately:
+**Run x402 services only:**
 ```bash
-# x402 service commands
-pnpm --filter x402-service dev:service
-pnpm --filter x402-service dev:facilitator
+pnpm dev:x402
+```
+
+**Run AP2 services only:**
+```bash
+pnpm dev:ap2
+```
+
+**Run services individually:**
+```bash
+# x402 services
+pnpm x402:facilitator    # Custom facilitator on :3002
+pnpm x402:service        # Quote service on :3001
+
+# AP2 services
+pnpm ap2:backend         # AP2 backend on :3003
+pnpm ap2:frontend        # React frontend on :5173
+```
+
+### Testing
+
+Test the x402 payment flow:
+```bash
 pnpm --filter x402-service pay test-x402
-pnpm --filter x402-service deploy
-pnpm --filter x402-service seed
-pnpm --filter x402-service check
-
-# ap2 service commands
-pnpm --filter ap2-service dev
-pnpm --filter ap2-service build
 ```
 
-### Option 2: From Service Directory
-
-Navigate to the service directory and work directly:
-```bash
-# For x402 service
-cd x402-service
-pnpm dev:service
-
-# For AP2 service (coming soon)
-cd ap2-service
-pnpm dev
-```
+Access the AP2 chat interface at http://localhost:5173
 
 ### Documentation
 
@@ -97,6 +154,56 @@ pnpm dev
 │    Network      │
 └─────────────────┘
 ```
+
+## Available Scripts Reference
+
+### Setup Scripts (Run Once)
+- **`pnpm x402:deploy`** - Deploy smart contracts to Arbitrum Sepolia (TestUSDC, TestWETH, etc.)
+- **`pnpm x402:seed`** - Mint test tokens to your wallet
+- **`pnpm ap2:docker:up`** - Start Ollama Docker container
+- **`pnpm ap2:docker:down`** - Stop Ollama Docker container
+- **`pnpm ap2:ollama:pull`** - Pull the AI model (llama3.1:8b)
+
+### Development Scripts
+- **`pnpm dev:all`** - Run all services together (x402 + AP2)
+- **`pnpm dev:x402`** - Run x402 facilitator and quote service
+- **`pnpm dev:ap2`** - Run AP2 backend and frontend
+- **`pnpm x402:facilitator`** - Run x402 facilitator only (port 3002)
+- **`pnpm x402:service`** - Run x402 quote service only (port 3001)
+- **`pnpm ap2:backend`** - Run AP2 backend only (port 3003)
+- **`pnpm ap2:frontend`** - Run AP2 frontend only (port 5173)
+
+### Testing & Utilities
+- **`pnpm --filter x402-service pay test-x402`** - Test x402 payment flow
+- **`pnpm --filter x402-service pay pay --swap ...`** - Execute a paid swap
+
+## Troubleshooting
+
+### "Contract addresses not found"
+Make sure you've deployed the contracts:
+```bash
+pnpm x402:deploy
+```
+
+### "Insufficient balance" errors
+Seed your wallet with test tokens:
+```bash
+pnpm x402:seed
+```
+
+### Ollama not responding
+Verify Docker container is running:
+```bash
+docker ps | grep ollama
+pnpm ap2:docker:up
+```
+
+### Services not connecting
+Ensure all required services are running in the correct order:
+1. Deploy contracts (`pnpm x402:deploy`)
+2. Start Ollama (`pnpm ap2:docker:up`)
+3. Start x402 services (`pnpm dev:x402`)
+4. Start AP2 services (`pnpm dev:ap2`)
 
 ## License
 
