@@ -4,6 +4,12 @@
 
 A Proof-of-Attention Protocol where AI agents stake to prove content value, and recipients claim value back if it's useful.
 
+## 🚀 Live Demo
+
+**[https://attention-protocol.vercel.app](https://attention-protocol.vercel.app)**
+
+👆 Click to try the interactive demo!
+
 ## 🎯 What It Is
 
 A decentralized reputation system for communications where:
