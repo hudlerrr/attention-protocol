@@ -1,147 +1,164 @@
-# 🧠 Proof-of-Attention Protocol Demo
+# 🧠 The Attention Protocol
 
-**"AI agents stake to prove their content deserves attention"**
+**Exploring new incentive mechanisms for attention/trust @ Encode**
 
-An experiment in autonomous value exchange where AI agents can pay or penalize each other for digital attention. Built on Arbitrum Sepolia with x402 payment protocol integration.
+A Proof-of-Attention Protocol where AI agents stake to prove content value, and recipients claim value back if it's useful.
 
-## 🎯 What This Demo Shows
+## 🎯 What It Is
 
-This is a **proof-of-concept** for a "proof-of-attention protocol" where:
-
-1. **Senders stake USDC** to prove their content deserves attention
-2. **AI agents evaluate** content automatically 
-3. **Smart contracts enforce** the economic logic (refund/slash)
-4. **Real-time dashboard** shows the "state of the attention economy"
+A decentralized reputation system for communications where:
+- **Senders stake** to prove their content deserves engagement
+- **Recipients claim value** back if it's useful
+- **AI agents** auto-filter, claim, or refund based on user preferences
+- **On-chain incentive layer** powers trust scoring
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ (works with v18 despite warnings)
-- Arbitrum Sepolia ETH for gas fees
-- Deployed smart contracts (already done!)
+- Node.js 18+
+- pnpm
+- Git
 
-### 1. Install Dependencies
+### Install & Run
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start the frontend (http://localhost:3005)
+cd x402-service/frontend && npm run dev
+
+# Optional: Start the API server (http://localhost:3004)
+cd x402-service && pnpm run dev:api
+```
+
+### CLI Commands
+
 ```bash
 cd x402-service
-pnpm install
-cd frontend
-pnpm install
-```
 
-### 2. Start the Demo
-```bash
-# Terminal 1: Start API server
-pnpm dev:api
+# Send email with attention staking
+pnpm pay send-email --content "Hello" --recipient 0x123... --stake 0.001
 
-# Terminal 2: Start frontend
-pnpm dev:frontend
-```
+# Evaluate email and determine refund/slash
+pnpm pay evaluate-email --email-id abc123 --verdict valuable
 
-### 3. Access the Demo
-- **Frontend**: http://localhost:3005
-- **API**: http://localhost:3004
-
-## 🎮 How to Use the Demo
-
-### Send Email Tab
-1. Write email content
-2. Set stake amount (default: 0.001 USDC)
-3. Click "Stake & Send"
-4. Watch the email appear in the dashboard
-
-### Evaluate Tab  
-1. Select a pending email
-2. Choose verdict: "Valuable" or "Spam"
-3. Click "Evaluate & Process Stake"
-4. See stake released (valuable) or slashed (spam)
-
-### Dashboard Tab
-- View real-time stats
-- See recent email activity
-- Monitor attention economy metrics
-
-## 🛠️ CLI Commands
-
-```bash
-# Send email with staking
-pnpm pay send-email --content "Hello world!" --stake 0.001
-
-# Evaluate email
-pnpm pay evaluate-email --email-id email_123 --verdict valuable
-
-# Show dashboard
+# View dashboard stats
 pnpm pay dashboard
-
-# Test x402 payment flow
-pnpm pay test-x402
 ```
 
-## 🏗️ Architecture
+## 📁 Project Structure
 
 ```
-┌─────────────────┐    HTTP API    ┌─────────────────┐
-│                 │ ──────────────► │                 │
-│  React Frontend │                 │  Express API    │
-│  (Port 3005)    │ ◄────────────── │  (Port 3004)    │
-│                 │   JSON Data     │                 │
-└─────────────────┘                 └─────────────────┘
-         │                                   │
-         │                                   │ Mock Data
-         │                                   ▼
-         │                           ┌─────────────────┐
-         │                           │  In-Memory      │
-         │                           │  Email Store    │
-         │                           └─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Smart Contracts│
-│  (Arbitrum      │
-│   Sepolia)      │
-└─────────────────┘
+attention-protocol/
+├── x402-service/
+│   ├── app/
+│   │   └── cli.ts          # CLI commands for attention protocol
+│   ├── api-server.ts       # REST API for frontend
+│   ├── frontend/           # React frontend (Vite)
+│   │   ├── src/
+│   │   │   ├── pages/
+│   │   │   │   ├── Inbox.jsx       # Email inbox view
+│   │   │   │   └── Metrics.jsx     # Protocol metrics dashboard
+│   │   │   ├── components/
+│   │   │   │   ├── Navbar.jsx      # Header navigation
+│   │   │   │   └── ComposeModal.jsx # 5-step compose flow
+│   │   │   └── data/
+│   │   │       └── inboxMock.js    # Mock data for demo
+│   │   └── dist/           # Production build
+│   └── contracts/          # Solidity smart contracts
+└── README.md
 ```
 
-## 📊 Smart Contract Addresses
+## 🎨 Features
 
-- **TestUSDC**: `0xe606F56a482f6668489ade1a1FFd489fc0AD431C`
-- **QuoteRegistry**: `0x16c130bf15e048E00C62A17021DB73F0168873Ed`
-- **ComposableExecutor**: `0x6564FBBD6Fc2BfeC87a10137f5241bE67bf1bf5a`
+### Frontend
+- **Dark cyberpunk theme** with neon colors (teal, purple, pink)
+- **Gmail-style interface** with sidebar navigation
+- **5-step compose flow**:
+  1. Select recipients & compose
+  2. Get quote (agent negotiation)
+  3. Review stake amount
+  4. Broadcast transaction
+  5. Success & auto-close
+- **Metrics dashboard** with stats, leaderboard, and meme cards
+- **Terminal monospace fonts** and smooth animations
 
+### Backend
+- **CLI tool** (`attention-protocol`) for sending/evaluating emails
+- **REST API** for frontend integration
+- **Mock staking logic** for demo purposes
+- **x402 protocol** compatible (Arbitrum Sepolia)
 
+## 🚢 Deployment
 
-**"We built a proof-of-attention protocol where AI agents handle message evaluation and payment staking between senders and recipients — an experiment in AI-to-AI value exchange on Arbitrum."**
+### Option 1: Vercel (Recommended)
 
-### Key Features Demonstrated:
-- ✅ **Attention Staking**: Senders stake USDC to prove content value
-- ✅ **AI Evaluation**: Automated content assessment 
-- ✅ **Economic Enforcement**: Smart contracts handle refund/slash
-- ✅ **Real-time Dashboard**: Live attention economy metrics
-- ✅ **Arbitrum Integration**: Deployed on Arbitrum Sepolia
-- ✅ **x402 Protocol**: Payment infrastructure
+```bash
+cd x402-service/frontend
+npx vercel
+```
 
-### Technical Stack:
-- **Frontend**: React + TypeScript + Vite
-- **Backend**: Express.js + Node.js
-- **Blockchain**: Arbitrum Sepolia + Solidity
-- **Payment**: x402 protocol + EIP-3009 signatures
+### Option 2: Netlify
 
-## 🔮 Future Enhancements
+```bash
+cd x402-service/frontend
+npx netlify deploy --prod --dir=dist
+```
 
-- Real AI model integration (Ollama)
-- On-chain reputation system
-- Multi-token support
-- Advanced spam detection
-- Agent-to-agent communication protocols
+### Option 3: Serve Locally
 
-## 📝 Flow
+```bash
+cd x402-service/frontend/dist
+npx serve
+```
 
-1. **Show the concept**: "AI agents stake to prove content value"
-2. **Send an email**: Demonstrate staking mechanism
-3. **Evaluate content**: Show AI decision making
-4. **View dashboard**: Real-time attention economy stats
-5. **Explain the vision**: "This is how we reimagine digital attention"
+## 🧪 Demo
+
+1. Click **"Compose"** in the sidebar
+2. Fill in subject, select recipients, type message
+3. Click **"Get Quote"** → wait for agent negotiation
+4. Review stake amount and click **"Stake & Send"**
+5. Watch transaction broadcast
+6. Success modal appears → redirects to inbox
+
+Switch to **"Protocol Metrics"** to see:
+- Total ATT staked
+- Engagement rate
+- Top agents leaderboard
+- Recent activity feed
+- Meme cards
+
+## 🔧 Tech Stack
+
+- **Frontend**: React + Vite + Framer Motion
+- **Backend**: Node.js + TypeScript + Commander.js
+- **Smart Contracts**: Solidity + Foundry
+- **Network**: Arbitrum Sepolia
+- **Styling**: Custom CSS (monospace font, neon colors)
+
+## 📚 Protocol Details
+
+### Core Concepts
+- **ATT Token**: Attention token used for staking
+- **Slashing**: Penalty for spam/low-value content
+- **Refunding**: Return stake for valuable content
+- **Trust Score**: On-chain reputation based on engagement
+
+### Architecture
+- Smart contracts for on-chain settlement
+- AI agents for content evaluation
+- CLI/API for interaction
+- Frontend for user experience
+
+## 🤝 Built For
+
+Encode Hackathon - Exploring incentive mechanisms for attention and trust
+
+## 📝 License
+
+MIT
 
 ---
 
-**Built for hackathon demo purposes. Not production ready.**
-
+**Made with ❤️ by the Attention Protocol team**
