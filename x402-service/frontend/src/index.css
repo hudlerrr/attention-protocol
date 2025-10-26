@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'JetBrains Mono', 'Inter', monospace;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 50%, #0a0a0a 100%);
+  color: #00ffd1;
+  min-height: 100vh;
+  text-shadow: 0 0 5px rgba(0,255,209,0.3);
+}
+
+.glow-effect {
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+}
+
+.glass {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.neon-teal { color: #00ffd1; }
+.neon-purple { color: #9333ea; }
+.neon-pink { color: #ec4899; }
+.bg-dark { background: #0a0a0a; }
+.bg-card { background: #1a1a1a; }
+.bg-gray-900 { background: rgba(17, 24, 39, 0.5); }
+
+.text-neon-teal { color: #00ffd1; }
+.text-neon-purple { color: #9333ea; }
+.bg-neon-purple { background: #9333ea; }
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: cursor-blink 1s infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.neon-border {
+  border: 1px solid #00ffd1;
+  box-shadow: 0 0 10px rgba(0,255,209,0.3), inset 0 0 10px rgba(0,255,209,0.1);
+}
+
+.terminal-glow {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.hacker-bg {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  border: 1px solid rgba(0,255,209,0.2);
+}
+
+.email-card {
+  background: linear-gradient(135deg, rgba(10,10,10,0.8) 0%, rgba(26,26,26,0.5) 100%);
+  border: 1px solid rgba(0,255,209,0.2);
+  box-shadow: 0 4px 20px rgba(0,255,209,0.1);
+}
+
+.email-card:hover {
+  border-color: rgba(0,255,209,0.5);
+  box-shadow: 0 8px 30px rgba(0,255,209,0.3);
+  transform: translateY(-2px);
+}
+
+.stats-glow {
+  box-shadow: 0 0 20px rgba(0,255,209,0.2);
+}

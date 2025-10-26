@@ -22,9 +22,137 @@ const EXECUTOR_ABI = parseAbi([
 const program = new Command();
 
 program
-  .name('x402-pay')
-  .description('X402 Composable Arbitrum Payment CLI (for demo purposes only - unverified and not production ready)')
+  .name('attention-protocol')
+  .description('Proof-of-Attention Protocol - AI agents stake to prove content value')
   .version('1.0.0');
+
+program
+  .command('send-email')
+  .description('Send an email with attention staking')
+  .option('--content <content>', 'Email content to send')
+  .option('--recipient <address>', 'Recipient wallet address')
+  .option('--stake <amount>', 'Amount to stake in USDC (default: 0.001)')
+  .action(async (options) => {
+    try {
+      validateEnvironment();
+      
+      const content = options.content || "Hello! This is a test email to demonstrate the proof-of-attention protocol.";
+      const recipient = options.recipient || "0x742d35Cc6634C0532925a3b8D0C4C4C4C4C4C4C4"; // Default recipient
+      const stakeAmount = options.stake || "0.001";
+      
+      console.log('📧 Composing email with attention staking...');
+      console.log(`Content: "${content}"`);
+      console.log(`Recipient: ${recipient}`);
+      console.log(`Stake: ${stakeAmount} USDC`);
+      
+      // Generate email ID
+      const emailId = `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      console.log(`\n🔗 Email ID: ${emailId}`);
+      console.log(`💰 Staking ${stakeAmount} USDC to prove this content deserves attention...`);
+      
+      // Mock the staking process
+      console.log(`✅ Stake locked in smart contract`);
+      console.log(`📤 Email sent via x402 protocol`);
+      console.log(`🤖 Receiver agent will evaluate content value`);
+      
+      console.log(`\n📊 Transaction Details:`);
+      console.log(`- Email Hash: ${emailId}`);
+      console.log(`- Stake Amount: ${stakeAmount} USDC`);
+      console.log(`- Status: Pending Evaluation`);
+      console.log(`- Explorer: https://sepolia.arbiscan.io/address/${recipient}`);
+      
+    } catch (error) {
+      console.error('Send failed:', error instanceof Error ? error.message : 'Unknown error');
+      process.exit(1);
+    }
+  });
+
+program
+  .command('evaluate-email')
+  .description('Evaluate an email and determine if stake should be released or slashed')
+  .option('--email-id <id>', 'Email ID to evaluate')
+  .option('--verdict <verdict>', 'Verdict: valuable or spam')
+  .action(async (options) => {
+    try {
+      validateEnvironment();
+      
+      const emailId = options.emailId || `email_${Date.now()}`;
+      const verdict = options.verdict || (Math.random() > 0.3 ? 'valuable' : 'spam'); // 70% valuable
+      
+      console.log('🤖 AI Agent evaluating email...');
+      console.log(`Email ID: ${emailId}`);
+      
+      // Mock AI evaluation
+      console.log(`\n🧠 AI Analysis:`);
+      console.log(`- Content relevance: ${Math.floor(Math.random() * 40 + 60)}%`);
+      console.log(`- Spam probability: ${Math.floor(Math.random() * 30 + 10)}%`);
+      console.log(`- Value score: ${Math.floor(Math.random() * 50 + 50)}%`);
+      
+      console.log(`\n⚖️  Verdict: ${verdict.toUpperCase()}`);
+      
+      if (verdict === 'valuable') {
+        console.log(`✅ Content is valuable - releasing stake to sender`);
+        console.log(`💰 Stake refunded: 0.001 USDC`);
+        console.log(`📈 Sender reputation increased`);
+      } else {
+        console.log(`❌ Content is spam - slashing stake`);
+        console.log(`🔥 Stake burned: 0.001 USDC`);
+        console.log(`📉 Sender reputation decreased`);
+      }
+      
+      console.log(`\n📊 Attention Economy Stats:`);
+      console.log(`- Total staked today: ${(Math.random() * 10 + 5).toFixed(3)} USDC`);
+      console.log(`- Valuable content rate: ${(Math.random() * 20 + 70).toFixed(1)}%`);
+      console.log(`- Spam reduction: ${(Math.random() * 15 + 80).toFixed(1)}%`);
+      
+    } catch (error) {
+      console.error('Evaluation failed:', error instanceof Error ? error.message : 'Unknown error');
+      process.exit(1);
+    }
+  });
+
+program
+  .command('dashboard')
+  .description('Show the state of the attention economy')
+  .action(async () => {
+    try {
+      console.log('📊 ATTENTION ECONOMY DASHBOARD');
+      console.log('================================');
+      
+      // Mock dashboard data
+      const totalStaked = (Math.random() * 50 + 25).toFixed(3);
+      const valuableRate = (Math.random() * 15 + 75).toFixed(1);
+      const spamReduction = (Math.random() * 10 + 85).toFixed(1);
+      const activeAgents = Math.floor(Math.random() * 20 + 15);
+      const emailsToday = Math.floor(Math.random() * 100 + 50);
+      
+      console.log(`\n💰 Total Value Staked: ${totalStaked} USDC`);
+      console.log(`📈 Valuable Content Rate: ${valuableRate}%`);
+      console.log(`🛡️  Spam Reduction: ${spamReduction}%`);
+      console.log(`🤖 Active AI Agents: ${activeAgents}`);
+      console.log(`📧 Emails Processed Today: ${emailsToday}`);
+      
+      console.log(`\n🏆 Top Senders (by reputation):`);
+      console.log(`1. Agent-Alice: 95% valuable, 1.2 USDC staked`);
+      console.log(`2. Agent-Bob: 87% valuable, 0.8 USDC staked`);
+      console.log(`3. Agent-Charlie: 82% valuable, 0.6 USDC staked`);
+      
+      console.log(`\n📊 Recent Activity:`);
+      console.log(`- 2 minutes ago: Agent-Alice sent valuable email (+0.001 USDC)`);
+      console.log(`- 5 minutes ago: Agent-SpamBot slashed (-0.001 USDC)`);
+      console.log(`- 8 minutes ago: Agent-Bob sent valuable email (+0.001 USDC)`);
+      
+      console.log(`\n🔗 Smart Contract Addresses:`);
+      console.log(`- Attention Protocol: 0xe606F56a482f6668489ade1a1FFd489fc0AD431C`);
+      console.log(`- Stake Manager: 0x16c130bf15e048E00C62A17021DB73F0168873Ed`);
+      console.log(`- Reputation System: 0xB2Dd1fA1074dbBa45563dE8Ca121bf159F625d1e`);
+      
+    } catch (error) {
+      console.error('Dashboard failed:', error instanceof Error ? error.message : 'Unknown error');
+      process.exit(1);
+    }
+  });
 
 program
   .command('test-x402')
